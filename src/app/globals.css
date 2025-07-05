@@ -120,3 +120,11 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* 1inch-style multi-gradient background */
+.bg-1inch-gradient {
+  background:
+    radial-gradient(ellipse 60% 40% at 20% 0%, rgba(59,130,246,0.18) 0%, transparent 80%), /* blue top left */
+    radial-gradient(ellipse 50% 30% at 100% 100%, rgba(120,63,255,0.22) 0%, transparent 80%), /* purple bottom right */
+    linear-gradient(120deg, #0D1117 0%, #181C23 60%, #232A36 100%);
+}

@@ -17,41 +17,118 @@ module.exports = {
     },
     extend: {
       colors: {
-        primary: {
+        // App backgrounds
+        app: {
           background: "#0D1117",
-          card: "#1A1F26",
-          cardHover: "#1E242C",
-          accent: "#3B82F6"
         },
-        text: {
-          primary: "#FFFFFF",
-          secondary: "#94A3B8",
-          accent: "#3B82F6",
-          balance: "#CBD5E1"
+        // Navbar
+        navbar: {
+          background: "transparent",
+          border: "rgba(255,255,255,0.1)",
+          icon: {
+            DEFAULT: "#FFFFFF",
+            hover: "#3B82F6"
+          },
+          text: {
+            primary: "#FFFFFF",
+            secondary: "#94A3B8"
+          }
         },
+        // Cards
+        card: {
+          bg: "#1A1F26",
+          border: "rgba(255,255,255,0.1)",
+          hover: "#1E242C",
+          content: {
+            primary: "#FFFFFF",
+            secondary: "#94A3B8",
+            balance: "#CBD5E1"
+          },
+          icon: {
+            fill: "#FFFFFF",
+            background: "none"
+          }
+        },
+        // Buttons
         button: {
           primary: {
             DEFAULT: "#3B82F6",
+            text: "#FFFFFF",
             hover: "#2563EB",
-            disabled: "#1E293B"
+            active: "#1E293B",
+            disabled: {
+              bg: "#1E293B",
+              text: "#64748B"
+            },
+            focus: {
+              border: "#3B82F6",
+              shadow: "rgba(59,130,246,0.2)"
+            }
           },
           secondary: {
             DEFAULT: "#1E293B",
-            hover: "#2D3748"
+            text: "#FFFFFF",
+            hover: "#2D3748",
+            active: "#2D3748"
           }
         },
-        token: {
+        // Inputs
+        input: {
+          bg: "#1A1F26",
+          border: "rgba(255,255,255,0.1)",
+          text: "#FFFFFF",
+          placeholder: "#64748B",
+          focus: {
+            border: "#3B82F6",
+            shadow: "rgba(59,130,246,0.2)"
+          }
+        },
+        // Token Selector
+        tokenSelector: {
+          button: {
+            bg: "#1A1F26",
+            border: "rgba(255,255,255,0.1)",
+            text: "#FFFFFF",
+            icon: {
+              bg: "#E84142",
+              text: "#FFFFFF"
+            },
+            hover: "#1E242C"
+          },
+          dropdown: {
+            bg: "#1A1F26",
+            border: "rgba(255,255,255,0.1)"
+          }
+        },
+        // Icons
+        icon: {
+          DEFAULT: "#FFFFFF",
           avax: {
-            background: "#E84142",
+            bg: "#E84142",
             text: "#FFFFFF"
           }
+        },
+        // Shadows
+        shadow: {
+          card: "0 4px 6px -1px rgba(0,0,0,0.1)",
+          dropdown: "0 10px 15px -3px rgba(0,0,0,0.1)"
+        },
+        // Text
+        text: {
+          primary: "#FFFFFF",
+          secondary: "#94A3B8",
+          balance: "#CBD5E1"
         }
       },
       borderRadius: {
         sm: "0.375rem",
         md: "0.5rem",
         lg: "0.75rem",
-        full: "9999px"
+        full: "9999px",
+        card: "1rem",
+        button: "0.5rem",
+        input: "0.75rem",
+        tokenSelector: "0.75rem"
       },
       fontFamily: {
         sans: ["Inter", "system-ui", "sans-serif"]
@@ -72,7 +149,9 @@ module.exports = {
       boxShadow: {
         sm: "0 1px 2px 0 rgba(0, 0, 0, 0.05)",
         md: "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
-        lg: "0 10px 15px -3px rgba(0, 0, 0, 0.1)"
+        lg: "0 10px 15px -3px rgba(0, 0, 0, 0.1)",
+        card: "0 4px 6px -1px rgba(0,0,0,0.1)",
+        dropdown: "0 10px 15px -3px rgba(0,0,0,0.1)"
       },
       keyframes: {
         "accordion-down": {
