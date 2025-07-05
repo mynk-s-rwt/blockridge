@@ -113,7 +113,7 @@ export function Converter() {
     buttonAction = () => switchChain({ chainId: ETHEREUM_MAINNET_ID });
     buttonLoading = isSwitching;
   } else if (hasInsufficientBalance) {
-    buttonText = 'Insufficient balance';
+    buttonText = 'Insufficient Balance';
     buttonAction = () => {};
   } else {
     buttonText = isUsdToWbtc ? 'Convert to wBTC' : 'Convert to USDC';
