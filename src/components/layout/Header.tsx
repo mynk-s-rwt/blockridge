@@ -1,9 +1,5 @@
 'use client';
-
-import { ConnectKitButton } from 'connectkit';
 import { useAccount, useBalance } from 'wagmi';
-import { Dialog, DialogContent, DialogTrigger, DialogClose } from '@/components/ui/dialog';
-import { Wallet2 } from 'lucide-react';
 import { useState } from 'react';
 import { Logo } from './Logo';
 import { DesktopNav } from './DesktopNav';

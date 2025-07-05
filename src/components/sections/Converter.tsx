@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -12,6 +12,7 @@ import { useSwitchChain } from 'wagmi';
 import { ArrowUpDown, CheckCircle } from 'lucide-react';
 
 const FALLBACK_BTC_PRICE = 107500;
+const decimalRegex = /^\d*(\.\d*)?$/;
 
 function InputSkeleton() {
   return (
@@ -54,16 +55,6 @@ export function Converter() {
   const ETHEREUM_MAINNET_ID = 1;
   const isOnMainnet = chainId === ETHEREUM_MAINNET_ID;
 
-  // Button state logic
-  const isInputValid = !!usdAmount || !!wbtcAmount;
-
-  // Fetch ETH balance
-  const { data: ethBalance, isLoading: isEthLoading, isError: isEthError } = useBalance({
-    address,
-    chainId,
-    query: { enabled: !!address },
-  });
-
   // Fetch USDC balance (ERC20)
   const { data: usdcBalance, isLoading: isUsdcLoading, isError: isUsdcError } = useBalance({
     address,
@@ -100,37 +91,41 @@ export function Converter() {
     }
   }
 
-  // Only disable for loading, switching, invalid input, or insufficient balance when converting
-  let isButtonDisabled = false;
-  if (!isConnected) {
-    isButtonDisabled = false; // Always enabled for Connect Wallet
-  } else if (!isOnMainnet) {
-    isButtonDisabled = isSwitching;
-  } else {
-    isButtonDisabled = isLoading || isUserTriggeredLoading || (!usdAmount && !wbtcAmount) || hasInsufficientBalance;
-  }
+  // Button state logic
+  const isButtonDisabled = useMemo(() => {
+    if (!isConnected) {
+      return false; // Always enabled for Connect Wallet
+    } else if (!isOnMainnet) {
+      return isSwitching;
+    } else {
+      return isLoading || isUserTriggeredLoading || (!usdAmount && !wbtcAmount) || hasInsufficientBalance;
+    }
+  }, [isConnected, isOnMainnet, isSwitching, isLoading, isUserTriggeredLoading, usdAmount, wbtcAmount, hasInsufficientBalance]);
 
-  let buttonText = isUsdToWbtc ? 'Convert to wBTC' : 'Convert to USDC';
-  let buttonAction = () => {};
-  let buttonLoading = false;
+  const { buttonText, buttonAction, buttonLoading } = useMemo(() => {
+    let text = isUsdToWbtc ? 'Convert to wBTC' : 'Convert to USDC';
+    let action = () => {};
+    let loading = false;
 
-  if (!isConnected) {
-    buttonText = 'Connect Wallet';
-    buttonAction = () => setOpen(true);
-  } else if (!isOnMainnet) {
-    buttonText = isSwitching ? 'Switching...' : 'Switch Network';
-    buttonAction = () => switchChain({ chainId: ETHEREUM_MAINNET_ID });
-    buttonLoading = isSwitching;
-  } else if (hasInsufficientBalance) {
-    buttonText = 'Insufficient Balance';
-    buttonAction = () => {};
-  } else {
-    buttonText = isUsdToWbtc ? 'Convert to wBTC' : 'Convert to USDC';
-    buttonAction = () => {
-      // TODO: implement conversion logic
-      setShowTransactionModal(true);
-    };
-  }
+    if (!isConnected) {
+      text = 'Connect Wallet';
+      action = () => setOpen(true);
+    } else if (!isOnMainnet) {
+      text = isSwitching ? 'Switching...' : 'Switch Network';
+      action = () => switchChain({ chainId: ETHEREUM_MAINNET_ID });
+      loading = isSwitching;
+    } else if (hasInsufficientBalance) {
+      text = 'Insufficient Balance';
+      action = () => {};
+    } else {
+      text = isUsdToWbtc ? 'Convert to wBTC' : 'Convert to USDC';
+      action = () => {
+        // TODO: implement conversion logic
+        setShowTransactionModal(true);
+      };
+    }
+    return { buttonText: text, buttonAction: action, buttonLoading: loading };
+  }, [isConnected, isOnMainnet, isSwitching, hasInsufficientBalance, isUsdToWbtc, setOpen, switchChain, setShowTransactionModal, ETHEREUM_MAINNET_ID]);
 
   // Refetch price when debounced input changes
   useEffect(() => {
@@ -165,9 +160,7 @@ export function Converter() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isLoading, error, usdPrice, debouncedUsdAmount, debouncedWbtcAmount]);
 
-  const decimalRegex = /^\d*(\.\d*)?$/;
-
-  const handleUsdChange = (value: string) => {
+  const handleUsdChange = useCallback((value: string) => {
     if (value === '' || decimalRegex.test(value)) {
       // Truncate to 2 decimals for USD
       const truncated = truncateDecimals(value, 2);
@@ -182,9 +175,9 @@ export function Converter() {
       setWbtcAmount(''); // Clear output while loading
       setIsUserTriggeredLoading(true);
     }
-  };
+  }, [decimalRegex, truncateDecimals, setUsdAmount, setWbtcAmount, setActiveInput, setIsUserTriggeredLoading]);
 
-  const handleWbtcChange = (value: string) => {
+  const handleWbtcChange = useCallback((value: string) => {
     if (value === '' || decimalRegex.test(value)) {
       // Truncate to 8 decimals for wBTC
       const truncated = truncateDecimals(value, 8);
@@ -199,12 +192,12 @@ export function Converter() {
       setUsdAmount(''); // Clear output while loading
       setIsUserTriggeredLoading(true);
     }
-  };
+  }, [decimalRegex, truncateDecimals, setWbtcAmount, setUsdAmount, setActiveInput, setIsUserTriggeredLoading]);
 
   // Reverse handler: switch direction, keep values with their currencies
-  const handleReverse = () => {
+  const handleReverse = useCallback(() => {
     setIsUsdToWbtc((prev) => !prev);
-  };
+  }, [setIsUsdToWbtc]);
 
   return (
     <Card className="w-full max-w-md mx-auto p-4 sm:p-6 bg-card-bg border border-card-border shadow-card rounded-lg">

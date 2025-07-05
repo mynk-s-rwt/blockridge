@@ -1,7 +1,6 @@
 import React from 'react';
 import { ConnectKitButton } from 'connectkit';
 import { GetBalanceReturnType } from 'wagmi/actions';
-import { TOKENS } from '@/lib/config';
 
 interface DesktopNavProps {
   isConnected: boolean;
