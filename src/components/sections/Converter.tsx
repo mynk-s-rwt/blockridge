@@ -11,28 +11,10 @@ import { ReverseButton } from './ReverseButton';
 import { ConvertButton } from './ConvertButton';
 import { TransactionModal } from './TransactionModal';
 import { ErrorMessageDisplay } from './ErrorMessageDisplay';
+import { truncateDecimals } from '@/lib/utils/number';
 
 const FALLBACK_BTC_PRICE = 107500;
 const decimalRegex = /^\d*(\.\d*)?$/;
-
-function InputSkeleton() {
-  return (
-    <div
-      className="w-full h-11 border border-input-border rounded-[0.75rem] bg-gray-700/60 animate-pulse px-3 flex items-center"
-    >
-      <div className="h-5 w-1/3 bg-gray-600/60 rounded" />
-    </div>
-  );
-}
-
-// Helper to truncate decimals without rounding
-function truncateDecimals(value: string, maxDecimals: number) {
-  if (!value.includes('.')) return value;
-  const [intPart, decPart] = value.split('.');
-  return decPart.length > maxDecimals
-    ? `${intPart}.${decPart.slice(0, maxDecimals)}`
-    : value;
-}
 
 export function Converter() {
   const { isConnected, chainId, address } = useAccount();
