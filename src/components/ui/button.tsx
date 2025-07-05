@@ -5,11 +5,12 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "@/lib/utils"
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-button text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none px-4 py-2 bg-[#3B82F6] text-white shadow-none hover:bg-[#2563EB] disabled:bg-[#1E293B] disabled:text-[#64748B] focus:border-[#3B82F6] focus:shadow focus:outline-none",
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-button text-base font-semibold transition-all disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none px-4 py-2 shadow-md focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-blue-500",
   {
     variants: {
       variant: {
-        default: "",
+        default: "bg-button-primary text-button-primary-text hover:bg-button-primary-hover disabled:bg-button-primary-disabled-bg disabled:text-button-primary-disabled-text focus:border-button-primary-focus-border focus:shadow-button-primary-focus-shadow",
+        gradient: "bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-lg hover:from-blue-600 hover:to-purple-600",
         destructive:
           "bg-destructive text-white shadow-xs hover:bg-destructive/90 focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/40 dark:bg-destructive/60",
         outline:
@@ -21,10 +22,10 @@ const buttonVariants = cva(
         link: "text-primary underline-offset-4 hover:underline",
       },
       size: {
-        default: "h-9 px-4 py-2 has-[>svg]:px-3",
-        sm: "h-8 rounded-md gap-1.5 px-3 has-[>svg]:px-2.5",
-        lg: "h-10 rounded-md px-6 has-[>svg]:px-4",
-        icon: "size-9",
+        default: "h-11 px-6 py-3 text-lg",
+        sm: "h-9 rounded-md gap-1.5 px-4 py-2 text-base",
+        lg: "h-14 rounded-lg px-8 py-4 text-xl",
+        icon: "size-11",
       },
     },
     defaultVariants: {
@@ -39,10 +40,13 @@ function Button({
   variant,
   size,
   asChild = false,
+  loading = false,
+  children,
   ...props
 }: React.ComponentProps<"button"> &
   VariantProps<typeof buttonVariants> & {
-    asChild?: boolean
+    asChild?: boolean,
+    loading?: boolean
   }) {
   const Comp = asChild ? Slot : "button"
 
@@ -50,8 +54,14 @@ function Button({
     <Comp
       data-slot="button"
       className={cn(buttonVariants({ variant, size, className }))}
+      disabled={props.disabled || loading}
       {...props}
-    />
+    >
+      {loading && (
+        <span className="animate-spin mr-2 h-5 w-5 border-2 border-t-transparent border-white rounded-full"></span>
+      )}
+      {children}
+    </Comp>
   )
 }
 

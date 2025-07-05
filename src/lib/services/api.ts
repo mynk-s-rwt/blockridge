@@ -10,12 +10,19 @@ export const fetchPrice = async (tokenIdOrSymbol: string): Promise<number> => {
   priceAbortController = new AbortController();
 
   // Return a promise that resolves after debounce
-  return new Promise((resolve) => {
+  return new Promise((resolve, reject) => {
     priceDebounceTimeout = setTimeout(async () => {
       try {
         // Use CoinGecko's id for BTC: 'bitcoin', for ETH: 'ethereum', for USDC: 'usd-coin', etc.
         const url = `https://api.coingecko.com/api/v3/simple/price?ids=${tokenIdOrSymbol}&vs_currencies=usd`;
         const res = await fetch(url, { signal: priceAbortController?.signal });
+        if (res.status === 429) {
+          const err = new Error('Too many requests');
+          // @ts-ignore
+          err.code = 'rate_limit';
+          reject(err);
+          return;
+        }
         if (!res.ok) throw new Error('Failed to fetch price');
         const data = await res.json();
         // Try both id and symbol as keys

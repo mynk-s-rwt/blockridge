@@ -6,6 +6,8 @@ import { useAccount } from 'wagmi';
 import { TOKENS } from '@/lib/config';
 import { usePrice } from '@/lib/hooks/use-price';
 import { useDebounce } from '@/lib/hooks/use-debounce';
+import { useModal } from 'connectkit';
+import { useSwitchChain } from 'wagmi';
 
 const FALLBACK_BTC_PRICE = 107500;
 
@@ -20,18 +22,46 @@ function InputSkeleton() {
 }
 
 export function Converter() {
-  const { isConnected } = useAccount();
+  const { isConnected, chainId } = useAccount();
+  const { switchChain, chains, isPending: isSwitching } = useSwitchChain();
+  const { setOpen } = useModal();
   const [usdAmount, setUsdAmount] = useState<string>('');
   const [wbtcAmount, setWbtcAmount] = useState<string>('');
   const [activeInput, setActiveInput] = useState<'usd' | 'wbtc' | null>(null);
   const [isUserTriggeredLoading, setIsUserTriggeredLoading] = useState(false);
-  const { usdPrice, isLoading, error, refetch } = usePrice('bitcoin');
+  const { usdPrice, isLoading, error, errorObj, refetch } = usePrice('bitcoin');
 
   const debouncedUsdAmount = useDebounce(usdAmount, 300);
   const debouncedWbtcAmount = useDebounce(wbtcAmount, 300);
 
   // Always use the latest price, fallback only if error
   const currentPrice = error ? FALLBACK_BTC_PRICE : usdPrice;
+
+  // Ethereum Mainnet chainId (from config)
+  const ETHEREUM_MAINNET_ID = 1;
+  const isOnMainnet = chainId === ETHEREUM_MAINNET_ID;
+
+  // Button state logic
+  const isInputValid = !!usdAmount || !!wbtcAmount;
+  const isButtonDisabled = isLoading || isUserTriggeredLoading || (!usdAmount && !wbtcAmount);
+
+  let buttonText = 'Convert to wBTC';
+  let buttonAction = () => {};
+  let buttonLoading = false;
+
+  if (!isConnected) {
+    buttonText = 'Connect Wallet';
+    buttonAction = () => setOpen(true);
+  } else if (!isOnMainnet) {
+    buttonText = isSwitching ? 'Switching...' : 'Switch Network';
+    buttonAction = () => switchChain({ chainId: ETHEREUM_MAINNET_ID });
+    buttonLoading = isSwitching;
+  } else {
+    buttonText = 'Convert to wBTC';
+    buttonAction = () => {
+      // TODO: implement conversion logic
+    };
+  }
 
   // Refetch price when debounced input changes
   useEffect(() => {
@@ -99,7 +129,7 @@ export function Converter() {
   };
 
   return (
-    <Card className="w-full max-w-md mx-auto p-6 bg-card-bg border border-card-border shadow-card rounded-card">
+    <Card className="w-full max-w-md mx-auto p-6 bg-card-bg border border-card-border shadow-card rounded-lg">
       <div className="space-y-6">
         <div>
           <label className="block text-sm font-medium text-card-content-secondary mb-2">
@@ -154,19 +184,15 @@ export function Converter() {
         </div>
 
         <Button
-          className="w-full bg-button-primary text-button-primary-text rounded-button shadow-none hover:bg-button-primary-hover disabled:bg-button-primary-disabled-bg disabled:text-button-primary-disabled-text focus:border-button-primary-focus-border focus:shadow-button-primary-focus-shadow"
-          disabled={!isConnected || (!usdAmount && !wbtcAmount) || isLoading || !!error}
+          className="w-full rounded-xl"
+          variant="gradient"
+          size="default"
+          loading={buttonLoading}
+          disabled={isButtonDisabled || buttonLoading}
+          onClick={buttonAction}
         >
-          {isLoading ? (
-            <span className="flex items-center justify-center"><span className="animate-spin mr-2 h-4 w-4 border-2 border-t-transparent border-white rounded-full"></span>Loading price...</span>
-          ) : error ? (
-            'Price unavailable'
-          ) : isConnected ? 'Convert to wBTC' : 'Connect Wallet to Convert'}
+          {buttonText}
         </Button>
-
-        {error && (
-          <p className="text-sm text-red-500 text-center">Failed to fetch BTC price. Using fallback: ${FALLBACK_BTC_PRICE.toLocaleString()}</p>
-        )}
       </div>
     </Card>
   );
