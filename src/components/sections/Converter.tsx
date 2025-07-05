@@ -8,6 +8,7 @@ import { usePrice } from '@/lib/hooks/use-price';
 import { useDebounce } from '@/lib/hooks/use-debounce';
 import { useModal } from 'connectkit';
 import { useSwitchChain } from 'wagmi';
+import { ArrowUpDown } from 'lucide-react';
 
 const FALLBACK_BTC_PRICE = 107500;
 
@@ -28,6 +29,7 @@ export function Converter() {
   const [usdAmount, setUsdAmount] = useState<string>('');
   const [wbtcAmount, setWbtcAmount] = useState<string>('');
   const [activeInput, setActiveInput] = useState<'usd' | 'wbtc' | null>(null);
+  const [isUsdToWbtc, setIsUsdToWbtc] = useState(true); // true: USD -> wBTC, false: wBTC -> USD
   const [isUserTriggeredLoading, setIsUserTriggeredLoading] = useState(false);
   const { usdPrice, isLoading, error, errorObj, refetch } = usePrice('bitcoin');
 
@@ -45,7 +47,7 @@ export function Converter() {
   const isInputValid = !!usdAmount || !!wbtcAmount;
   const isButtonDisabled = isLoading || isUserTriggeredLoading || (!usdAmount && !wbtcAmount);
 
-  let buttonText = 'Convert to wBTC';
+  let buttonText = isUsdToWbtc ? 'Convert to wBTC' : 'Convert to USDC';
   let buttonAction = () => {};
   let buttonLoading = false;
 
@@ -57,7 +59,7 @@ export function Converter() {
     buttonAction = () => switchChain({ chainId: ETHEREUM_MAINNET_ID });
     buttonLoading = isSwitching;
   } else {
-    buttonText = 'Convert to wBTC';
+    buttonText = isUsdToWbtc ? 'Convert to wBTC' : 'Convert to USDC';
     buttonAction = () => {
       // TODO: implement conversion logic
     };
@@ -128,22 +130,28 @@ export function Converter() {
     }
   };
 
+  // Reverse handler: switch direction, keep values with their currencies
+  const handleReverse = () => {
+    setIsUsdToWbtc((prev) => !prev);
+  };
+
   return (
     <Card className="w-full max-w-md mx-auto p-6 bg-card-bg border border-card-border shadow-card rounded-lg">
       <div className="space-y-6">
+        {/* Top Field (dynamic) */}
         <div>
           <label className="block text-sm font-medium text-card-content-secondary mb-2">
-            USD Amount
+            {isUsdToWbtc ? 'USD Amount' : 'wBTC Amount'}
           </label>
           <div className="relative flex items-center min-h-[48px]">
-            {activeInput === 'usd' || !isUserTriggeredLoading ? (
+            {((isUsdToWbtc && (activeInput === 'usd' || !isUserTriggeredLoading)) || (!isUsdToWbtc && (activeInput === 'wbtc' || !isUserTriggeredLoading))) ? (
               <Input
                 type="text"
                 inputMode="decimal"
                 pattern="^[0-9]*[.,]?[0-9]*$"
-                placeholder="Enter USD amount"
-                value={usdAmount}
-                onChange={(e) => handleUsdChange(e.target.value)}
+                placeholder={isUsdToWbtc ? 'Enter USD amount' : 'Enter wBTC amount'}
+                value={isUsdToWbtc ? usdAmount : wbtcAmount}
+                onChange={(e) => isUsdToWbtc ? handleUsdChange(e.target.value) : handleWbtcChange(e.target.value)}
                 className="bg-input-bg text-input-text border-input-border rounded-input placeholder-input-placeholder focus:border-input-focus-border focus:shadow-input-focus-shadow pr-12"
                 disabled={isLoading || !!error}
               />
@@ -151,25 +159,38 @@ export function Converter() {
               <InputSkeleton />
             )}
             <img
-              src={TOKENS.USDC.logoURI}
-              className="absolute right-2 w-5.5 h-5.5"
+              src={isUsdToWbtc ? TOKENS.USDC.logoURI : TOKENS.BTC.logoURI}
+              className="absolute right-3 w-6 h-6"
             />
           </div>
         </div>
 
+        {/* Reverse Button */}
+        <div className="flex justify-center my-2">
+          <button
+            type="button"
+            aria-label="Reverse currencies"
+            onClick={handleReverse}
+            className="flex items-center justify-center rounded-full bg-card-bg border border-card-border shadow-card hover:bg-card-hover transition-colors w-10 h-10 cursor-pointer"
+          >
+            <ArrowUpDown className="w-5 h-5 text-text-primary" />
+          </button>
+        </div>
+
+        {/* Bottom Field (dynamic) */}
         <div>
           <label className="block text-sm font-medium text-card-content-secondary mb-2">
-            wBTC Amount
+            {isUsdToWbtc ? 'wBTC Amount' : 'USD Amount'}
           </label>
           <div className="relative flex items-center min-h-[48px]">
-            {activeInput === 'wbtc' || !isUserTriggeredLoading ? (
+            {((isUsdToWbtc && (activeInput === 'wbtc' || !isUserTriggeredLoading)) || (!isUsdToWbtc && (activeInput === 'usd' || !isUserTriggeredLoading))) ? (
               <Input
                 type="text"
                 inputMode="decimal"
                 pattern="^[0-9]*[.,]?[0-9]*$"
-                placeholder="Enter wBTC amount"
-                value={wbtcAmount}
-                onChange={(e) => handleWbtcChange(e.target.value)}
+                placeholder={isUsdToWbtc ? 'Enter wBTC amount' : 'Enter USD amount'}
+                value={isUsdToWbtc ? wbtcAmount : usdAmount}
+                onChange={(e) => isUsdToWbtc ? handleWbtcChange(e.target.value) : handleUsdChange(e.target.value)}
                 className="bg-input-bg text-input-text border-input-border rounded-input placeholder-input-placeholder focus:border-input-focus-border focus:shadow-input-focus-shadow pr-12"
                 disabled={isLoading || !!error}
               />
@@ -177,8 +198,8 @@ export function Converter() {
               <InputSkeleton />
             )}
             <img
-              src={TOKENS.BTC.logoURI}
-              className="absolute right-2 w-5.5 h-5.5"
+              src={isUsdToWbtc ? TOKENS.BTC.logoURI : TOKENS.USDC.logoURI}
+              className="absolute right-3 w-6 h-6"
             />
           </div>
         </div>
