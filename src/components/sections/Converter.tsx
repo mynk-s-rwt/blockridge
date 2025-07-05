@@ -2,13 +2,14 @@ import { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useAccount, useBalance } from 'wagmi';
 import { TOKENS } from '@/lib/config';
 import { usePrice } from '@/lib/hooks/use-price';
 import { useDebounce } from '@/lib/hooks/use-debounce';
 import { useModal } from 'connectkit';
 import { useSwitchChain } from 'wagmi';
-import { ArrowUpDown } from 'lucide-react';
+import { ArrowUpDown, CheckCircle } from 'lucide-react';
 
 const FALLBACK_BTC_PRICE = 107500;
 
@@ -31,6 +32,7 @@ export function Converter() {
   const [activeInput, setActiveInput] = useState<'usd' | 'wbtc' | null>(null);
   const [isUsdToWbtc, setIsUsdToWbtc] = useState(true); // true: USD -> wBTC, false: wBTC -> USD
   const [isUserTriggeredLoading, setIsUserTriggeredLoading] = useState(false);
+  const [showTransactionModal, setShowTransactionModal] = useState(false);
   const { usdPrice, isLoading, error, errorObj, refetch } = usePrice('bitcoin');
 
   const debouncedUsdAmount = useDebounce(usdAmount, 300);
@@ -70,6 +72,7 @@ export function Converter() {
     buttonText = isUsdToWbtc ? 'Convert to wBTC' : 'Convert to USDC';
     buttonAction = () => {
       // TODO: implement conversion logic
+      setShowTransactionModal(true);
     };
   }
 
@@ -264,6 +267,23 @@ export function Converter() {
           {buttonText}
         </Button>
       </div>
+
+      {/* Transaction Completion Modal */}
+      <Dialog open={showTransactionModal} onOpenChange={setShowTransactionModal}>
+        <DialogContent className="max-w-sm w-full text-center">
+          <DialogHeader>
+            <DialogTitle className="flex flex-col items-center gap-2 text-center">
+              <CheckCircle className="w-12 h-12 text-green-500 mb-2" />
+              <span className="text-xl font-bold">Transaction Completed</span>
+            </DialogTitle>
+          </DialogHeader>
+          <div className="py-2">
+            <p className="text-gray-600 dark:text-gray-300">
+              Your conversion has been successfully completed!
+            </p>
+          </div>
+        </DialogContent>
+      </Dialog>
     </Card>
   );
 } 

@@ -13,7 +13,7 @@ export function Header() {
     query: { enabled: !!address },
   });
   return (
-    <header className="fixed top-0 left-0 w-full z-50 py-4 px-6 flex justify-between items-center bg-primary-background shadow-md backdrop-blur-lg">
+    <header className="fixed top-0 left-0 w-full py-4 px-6 flex justify-between items-center bg-primary-background shadow-md backdrop-blur-lg">
       <div className="flex items-center gap-2">
         <img src="/bitcoin.svg" alt="wBTC" className="w-8 h-8" />
         <h1 className="text-xl font-semibold text-text-primary">wBTC</h1>
