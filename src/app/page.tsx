@@ -8,7 +8,7 @@ export default function Home() {
     <Layout>
       <div className="flex flex-col items-center justify-center min-h-[calc(100vh-5rem)]">
         <h2 className="text-2xl font-semibold text-text-primary mb-8">
-          Convert USD to Wrapped Bitcoin (wBTC)
+          Wrapped Bitcoin (wBTC) converter
         </h2>
         <Converter />
       </div>
