@@ -47,34 +47,6 @@ export function Converter() {
 
   // Button state logic
   const isInputValid = !!usdAmount || !!wbtcAmount;
-  // Only disable for loading, switching, or invalid input when converting
-  let isButtonDisabled = false;
-  if (!isConnected) {
-    isButtonDisabled = false; // Always enabled for Connect Wallet
-  } else if (!isOnMainnet) {
-    isButtonDisabled = isSwitching;
-  } else {
-    isButtonDisabled = isLoading || isUserTriggeredLoading || (!usdAmount && !wbtcAmount);
-  }
-
-  let buttonText = isUsdToWbtc ? 'Convert to wBTC' : 'Convert to USDC';
-  let buttonAction = () => {};
-  let buttonLoading = false;
-
-  if (!isConnected) {
-    buttonText = 'Connect Wallet';
-    buttonAction = () => setOpen(true);
-  } else if (!isOnMainnet) {
-    buttonText = isSwitching ? 'Switching...' : 'Switch Network';
-    buttonAction = () => switchChain({ chainId: ETHEREUM_MAINNET_ID });
-    buttonLoading = isSwitching;
-  } else {
-    buttonText = isUsdToWbtc ? 'Convert to wBTC' : 'Convert to USDC';
-    buttonAction = () => {
-      // TODO: implement conversion logic
-      setShowTransactionModal(true);
-    };
-  }
 
   // Fetch ETH balance
   const { data: ethBalance, isLoading: isEthLoading, isError: isEthError } = useBalance({
@@ -98,6 +70,58 @@ export function Converter() {
     token: TOKENS.BTC.address as `0x${string}`,
     query: { enabled: !!address },
   });
+
+  // Check for insufficient balance
+  let hasInsufficientBalance = false;
+  if (isConnected && isOnMainnet) {
+    if (isUsdToWbtc) {
+      // Compare USDC balance with USD input
+      const input = parseFloat(usdAmount || '0');
+      const balance = usdcBalance ? parseFloat(usdcBalance.formatted) : 0;
+      if (usdAmount && input > balance) {
+        hasInsufficientBalance = true;
+      }
+    } else {
+      // Compare wBTC balance with wBTC input
+      const input = parseFloat(wbtcAmount || '0');
+      const balance = wbtcBalance ? parseFloat(wbtcBalance.formatted) : 0;
+      if (wbtcAmount && input > balance) {
+        hasInsufficientBalance = true;
+      }
+    }
+  }
+
+  // Only disable for loading, switching, invalid input, or insufficient balance when converting
+  let isButtonDisabled = false;
+  if (!isConnected) {
+    isButtonDisabled = false; // Always enabled for Connect Wallet
+  } else if (!isOnMainnet) {
+    isButtonDisabled = isSwitching;
+  } else {
+    isButtonDisabled = isLoading || isUserTriggeredLoading || (!usdAmount && !wbtcAmount) || hasInsufficientBalance;
+  }
+
+  let buttonText = isUsdToWbtc ? 'Convert to wBTC' : 'Convert to USDC';
+  let buttonAction = () => {};
+  let buttonLoading = false;
+
+  if (!isConnected) {
+    buttonText = 'Connect Wallet';
+    buttonAction = () => setOpen(true);
+  } else if (!isOnMainnet) {
+    buttonText = isSwitching ? 'Switching...' : 'Switch Network';
+    buttonAction = () => switchChain({ chainId: ETHEREUM_MAINNET_ID });
+    buttonLoading = isSwitching;
+  } else if (hasInsufficientBalance) {
+    buttonText = 'Insufficient balance';
+    buttonAction = () => {};
+  } else {
+    buttonText = isUsdToWbtc ? 'Convert to wBTC' : 'Convert to USDC';
+    buttonAction = () => {
+      // TODO: implement conversion logic
+      setShowTransactionModal(true);
+    };
+  }
 
   // Refetch price when debounced input changes
   useEffect(() => {
