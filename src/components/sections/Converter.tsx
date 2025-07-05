@@ -68,6 +68,12 @@ export function Converter() {
 
   const handleUsdChange = (value: string) => {
     setUsdAmount(value);
+    if (value === '') {
+      setWbtcAmount('');
+      setActiveInput(null);
+      setIsUserTriggeredLoading(false);
+      return;
+    }
     setActiveInput('usd');
     setWbtcAmount(''); // Clear output while loading
     setIsUserTriggeredLoading(true);
@@ -75,6 +81,12 @@ export function Converter() {
 
   const handleWbtcChange = (value: string) => {
     setWbtcAmount(value);
+    if (value === '') {
+      setUsdAmount('');
+      setActiveInput(null);
+      setIsUserTriggeredLoading(false);
+      return;
+    }
     setActiveInput('wbtc');
     setUsdAmount(''); // Clear output while loading
     setIsUserTriggeredLoading(true);
