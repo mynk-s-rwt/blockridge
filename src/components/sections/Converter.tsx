@@ -45,7 +45,15 @@ export function Converter() {
 
   // Button state logic
   const isInputValid = !!usdAmount || !!wbtcAmount;
-  const isButtonDisabled = isLoading || isUserTriggeredLoading || (!usdAmount && !wbtcAmount);
+  // Only disable for loading, switching, or invalid input when converting
+  let isButtonDisabled = false;
+  if (!isConnected) {
+    isButtonDisabled = false; // Always enabled for Connect Wallet
+  } else if (!isOnMainnet) {
+    isButtonDisabled = isSwitching;
+  } else {
+    isButtonDisabled = isLoading || isUserTriggeredLoading || (!usdAmount && !wbtcAmount);
+  }
 
   let buttonText = isUsdToWbtc ? 'Convert to wBTC' : 'Convert to USDC';
   let buttonAction = () => {};
