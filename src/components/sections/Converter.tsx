@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { useAccount } from 'wagmi';
+import { useAccount, useBalance } from 'wagmi';
 import { TOKENS } from '@/lib/config';
 import { usePrice } from '@/lib/hooks/use-price';
 import { useDebounce } from '@/lib/hooks/use-debounce';
@@ -23,7 +23,7 @@ function InputSkeleton() {
 }
 
 export function Converter() {
-  const { isConnected, chainId } = useAccount();
+  const { isConnected, chainId, address } = useAccount();
   const { switchChain, chains, isPending: isSwitching } = useSwitchChain();
   const { setOpen } = useModal();
   const [usdAmount, setUsdAmount] = useState<string>('');
@@ -64,6 +64,29 @@ export function Converter() {
       // TODO: implement conversion logic
     };
   }
+
+  // Fetch ETH balance
+  const { data: ethBalance, isLoading: isEthLoading, isError: isEthError } = useBalance({
+    address,
+    chainId,
+    query: { enabled: !!address },
+  });
+
+  // Fetch USDC balance (ERC20)
+  const { data: usdcBalance, isLoading: isUsdcLoading, isError: isUsdcError } = useBalance({
+    address,
+    chainId,
+    token: TOKENS.USDC.address as `0x${string}`,
+    query: { enabled: !!address },
+  });
+
+  // Fetch wBTC balance (ERC20)
+  const { data: wbtcBalance, isLoading: isWbtcLoading, isError: isWbtcError } = useBalance({
+    address,
+    chainId,
+    token: TOKENS.BTC.address as `0x${string}`,
+    query: { enabled: !!address },
+  });
 
   // Refetch price when debounced input changes
   useEffect(() => {
@@ -163,6 +186,15 @@ export function Converter() {
               className="absolute right-3 w-6 h-6"
             />
           </div>
+          {/* Show balance for this field */}
+          {isConnected && (
+            <div className="flex items-center justify-end text-xs text-card-content-balance mt-1">
+              {isUsdToWbtc
+                ? (isUsdcLoading ? 'Loading USDC...' : isUsdcError ? 'Error loading USDC' : usdcBalance ? `USDC: ${parseFloat(usdcBalance.formatted).toFixed(4)}` : null)
+                : (isWbtcLoading ? 'Loading wBTC...' : isWbtcError ? 'Error loading wBTC' : wbtcBalance ? `wBTC: ${parseFloat(wbtcBalance.formatted).toFixed(4)}` : null)
+              }
+            </div>
+          )}
         </div>
 
         {/* Reverse Button */}
@@ -202,6 +234,15 @@ export function Converter() {
               className="absolute right-3 w-6 h-6"
             />
           </div>
+          {/* Show balance for this field */}
+          {isConnected && (
+            <div className="flex items-center justify-end text-xs text-card-content-balance mt-1">
+              {!isUsdToWbtc
+                ? (isUsdcLoading ? 'Loading USDC...' : isUsdcError ? 'Error loading USDC' : usdcBalance ? `USDC: ${parseFloat(usdcBalance.formatted).toFixed(4)}` : null)
+                : (isWbtcLoading ? 'Loading wBTC...' : isWbtcError ? 'Error loading wBTC' : wbtcBalance ? `wBTC: ${parseFloat(wbtcBalance.formatted).toFixed(4)}` : null)
+              }
+            </div>
+          )}
         </div>
 
         <Button
