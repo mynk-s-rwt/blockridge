@@ -1,15 +1,16 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { Card } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useAccount, useBalance } from 'wagmi';
 import { TOKENS } from '@/lib/config';
 import { usePrice } from '@/lib/hooks/use-price';
 import { useDebounce } from '@/lib/hooks/use-debounce';
 import { useModal } from 'connectkit';
 import { useSwitchChain } from 'wagmi';
-import { ArrowUpDown, CheckCircle } from 'lucide-react';
+import { CurrencyInput } from './CurrencyInput';
+import { ReverseButton } from './ReverseButton';
+import { ConvertButton } from './ConvertButton';
+import { TransactionModal } from './TransactionModal';
+import { ErrorMessageDisplay } from './ErrorMessageDisplay';
 
 const FALLBACK_BTC_PRICE = 107500;
 const decimalRegex = /^\d*(\.\d*)?$/;
@@ -203,125 +204,59 @@ export function Converter() {
     <Card className="w-full max-w-md mx-auto p-4 sm:p-6 bg-card-bg border border-card-border shadow-card rounded-lg">
       <div className="space-y-6">
         {/* Top Field (dynamic) */}
-        <div>
-          <label className="block text-sm font-medium text-card-content-secondary mb-2">
-            {isUsdToWbtc ? 'USD Amount' : 'wBTC Amount'}
-          </label>
-          <div className="relative flex items-center min-h-[48px]">
-            {((isUsdToWbtc && (activeInput === 'usd' || !isUserTriggeredLoading)) || (!isUsdToWbtc && (activeInput === 'wbtc' || !isUserTriggeredLoading))) ? (
-              <Input
-                type="text"
-                inputMode="decimal"
-                pattern="^[0-9]*[.,]?[0-9]*$"
-                placeholder={isUsdToWbtc ? 'Enter USD amount' : 'Enter wBTC amount'}
-                value={isUsdToWbtc ? usdAmount : wbtcAmount}
-                onChange={(e) => isUsdToWbtc ? handleUsdChange(e.target.value) : handleWbtcChange(e.target.value)}
-                className="bg-input-bg text-input-text border-input-border rounded-input placeholder-input-placeholder focus:border-input-focus-border focus:shadow-input-focus-shadow pr-12"
-                disabled={isLoading || !!error}
-              />
-            ) : (
-              <InputSkeleton />
-            )}
-            <img
-              src={isUsdToWbtc ? TOKENS.USDC.logoURI : TOKENS.BTC.logoURI}
-              className="absolute right-3 w-6 h-6"
-            />
-          </div>
-          {/* Show balance for this field */}
-          {isConnected && (
-            <div className="flex items-center justify-end text-xs text-card-content-balance mt-1">
-              {isUsdToWbtc
-                ? (isUsdcLoading ? 'Loading USDC...' : isUsdcError ? 'Error loading USDC' : usdcBalance ? `USDC: ${parseFloat(usdcBalance.formatted).toFixed(4)}` : null)
-                : (isWbtcLoading ? 'Loading wBTC...' : isWbtcError ? 'Error loading wBTC' : wbtcBalance ? `wBTC: ${parseFloat(wbtcBalance.formatted).toFixed(4)}` : null)
-              }
-            </div>
-          )}
-        </div>
+        <CurrencyInput
+          label={isUsdToWbtc ? 'USD Amount' : 'wBTC Amount'}
+          amount={isUsdToWbtc ? usdAmount : wbtcAmount}
+          currencyLogo={isUsdToWbtc ? TOKENS.USDC.logoURI : TOKENS.BTC.logoURI}
+          placeholder={isUsdToWbtc ? 'Enter USD amount' : 'Enter wBTC amount'}
+          onChange={isUsdToWbtc ? handleUsdChange : handleWbtcChange}
+          isDisabled={isLoading || !!error}
+          isConnected={isConnected}
+          balanceDisplay={isUsdToWbtc
+            ? (isUsdcLoading ? 'Loading USDC...' : isUsdcError ? 'Error loading USDC' : usdcBalance ? `USDC: ${parseFloat(usdcBalance.formatted).toFixed(4)}` : null)
+            : (isWbtcLoading ? 'Loading wBTC...' : isWbtcError ? 'Error loading wBTC' : wbtcBalance ? `wBTC: ${parseFloat(wbtcBalance.formatted).toFixed(4)}` : null)
+          }
+          isActiveInput={(isUsdToWbtc && (activeInput === 'usd' || !isUserTriggeredLoading)) || (!isUsdToWbtc && (activeInput === 'wbtc' || !isUserTriggeredLoading))}
+          isUserTriggeredLoading={isUserTriggeredLoading}
+        />
 
         {/* Reverse Button */}
-        <div className="flex justify-center my-2">
-          <button
-            type="button"
-            aria-label="Reverse currencies"
-            onClick={handleReverse}
-            className="flex items-center justify-center rounded-full bg-card-bg border border-card-border shadow-card hover:bg-card-hover transition-colors w-10 h-10 cursor-pointer"
-          >
-            <ArrowUpDown className="w-5 h-5 text-text-primary" />
-          </button>
-        </div>
+        <ReverseButton onClick={handleReverse} />
 
         {/* Bottom Field (dynamic) */}
-        <div>
-          <label className="block text-sm font-medium text-card-content-secondary mb-2">
-            {isUsdToWbtc ? 'wBTC Amount' : 'USD Amount'}
-          </label>
-          <div className="relative flex items-center min-h-[48px]">
-            {((isUsdToWbtc && (activeInput === 'wbtc' || !isUserTriggeredLoading)) || (!isUsdToWbtc && (activeInput === 'usd' || !isUserTriggeredLoading))) ? (
-              <Input
-                type="text"
-                inputMode="decimal"
-                pattern="^[0-9]*[.,]?[0-9]*$"
-                placeholder={isUsdToWbtc ? 'Enter wBTC amount' : 'Enter USD amount'}
-                value={isUsdToWbtc ? wbtcAmount : usdAmount}
-                onChange={(e) => isUsdToWbtc ? handleWbtcChange(e.target.value) : handleUsdChange(e.target.value)}
-                className="bg-input-bg text-input-text border-input-border rounded-input placeholder-input-placeholder focus:border-input-focus-border focus:shadow-input-focus-shadow pr-12"
-                disabled={isLoading || !!error}
-              />
-            ) : (
-              <InputSkeleton />
-            )}
-            <img
-              src={isUsdToWbtc ? TOKENS.BTC.logoURI : TOKENS.USDC.logoURI}
-              className="absolute right-3 w-6 h-6"
-            />
-          </div>
-          {/* Show balance for this field */}
-          {isConnected && (
-            <div className="flex items-center justify-end text-xs text-card-content-balance mt-1">
-              {!isUsdToWbtc
-                ? (isUsdcLoading ? 'Loading USDC...' : isUsdcError ? 'Error loading USDC' : usdcBalance ? `USDC: ${parseFloat(usdcBalance.formatted).toFixed(4)}` : null)
-                : (isWbtcLoading ? 'Loading wBTC...' : isWbtcError ? 'Error loading wBTC' : wbtcBalance ? `wBTC: ${parseFloat(wbtcBalance.formatted).toFixed(4)}` : null)
-              }
-            </div>
-          )}
-          {/* Error message below conversion result */}
-          {(error || isUsdcError || isWbtcError) && (
-            <div className="mt-2 text-sm text-red-500 bg-red-50 dark:bg-red-900/30 rounded px-3 py-2">
-              {error && 'Failed to fetch price data. Please try again later.'}
-              {isUsdcError && 'Failed to fetch USDC balance. Please check your wallet or try again.'}
-              {isWbtcError && 'Failed to fetch wBTC balance. Please check your wallet or try again.'}
-            </div>
-          )}
-        </div>
+        <CurrencyInput
+          label={isUsdToWbtc ? 'wBTC Amount' : 'USD Amount'}
+          amount={isUsdToWbtc ? wbtcAmount : usdAmount}
+          currencyLogo={isUsdToWbtc ? TOKENS.BTC.logoURI : TOKENS.USDC.logoURI}
+          placeholder={isUsdToWbtc ? 'Enter wBTC amount' : 'Enter USD amount'}
+          onChange={isUsdToWbtc ? handleWbtcChange : handleUsdChange}
+          isDisabled={isLoading || !!error}
+          isConnected={isConnected}
+          balanceDisplay={!isUsdToWbtc
+            ? (isUsdcLoading ? 'Loading USDC...' : isUsdcError ? 'Error loading USDC' : usdcBalance ? `USDC: ${parseFloat(usdcBalance.formatted).toFixed(4)}` : null)
+            : (isWbtcLoading ? 'Loading wBTC...' : isWbtcError ? 'Error loading wBTC' : wbtcBalance ? `wBTC: ${parseFloat(wbtcBalance.formatted).toFixed(4)}` : null)
+          }
+          isActiveInput={(!isUsdToWbtc && (activeInput === 'usd' || !isUserTriggeredLoading)) || (isUsdToWbtc && (activeInput === 'wbtc' || !isUserTriggeredLoading))}
+          isUserTriggeredLoading={isUserTriggeredLoading}
+        />
 
-        <Button
-          className="w-full rounded-xl"
-          variant="gradient"
-          size="default"
-          loading={buttonLoading}
-          disabled={isButtonDisabled || buttonLoading}
+        {/* Error message below conversion result */}
+        <ErrorMessageDisplay
+          error={!!error}
+          isUsdcError={isUsdcError}
+          isWbtcError={isWbtcError}
+        />
+
+        <ConvertButton
+          buttonText={buttonText}
+          buttonLoading={buttonLoading}
+          isButtonDisabled={isButtonDisabled}
           onClick={buttonAction}
-        >
-          {buttonText}
-        </Button>
+        />
       </div>
 
       {/* Transaction Completion Modal */}
-      <Dialog open={showTransactionModal} onOpenChange={setShowTransactionModal}>
-        <DialogContent className="max-w-sm w-full text-center">
-          <DialogHeader>
-            <DialogTitle className="flex flex-col items-center gap-2 text-center">
-              <CheckCircle className="w-12 h-12 text-green-500 mb-2" />
-              <span className="text-xl font-bold">Transaction Completed</span>
-            </DialogTitle>
-          </DialogHeader>
-          <div className="py-2">
-            <p className="text-gray-600 dark:text-gray-300">
-              Your conversion has been successfully completed!
-            </p>
-          </div>
-        </DialogContent>
-      </Dialog>
+      <TransactionModal isOpen={showTransactionModal} onClose={setShowTransactionModal} />
     </Card>
   );
 } 
