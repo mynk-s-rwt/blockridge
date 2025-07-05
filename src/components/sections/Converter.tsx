@@ -23,6 +23,15 @@ function InputSkeleton() {
   );
 }
 
+// Helper to truncate decimals without rounding
+function truncateDecimals(value: string, maxDecimals: number) {
+  if (!value.includes('.')) return value;
+  const [intPart, decPart] = value.split('.');
+  return decPart.length > maxDecimals
+    ? `${intPart}.${decPart.slice(0, maxDecimals)}`
+    : value;
+}
+
 export function Converter() {
   const { isConnected, chainId, address } = useAccount();
   const { switchChain, chains, isPending: isSwitching } = useSwitchChain();
@@ -160,8 +169,10 @@ export function Converter() {
 
   const handleUsdChange = (value: string) => {
     if (value === '' || decimalRegex.test(value)) {
-      setUsdAmount(value);
-      if (value === '') {
+      // Truncate to 2 decimals for USD
+      const truncated = truncateDecimals(value, 2);
+      setUsdAmount(truncated);
+      if (truncated === '') {
         setWbtcAmount('');
         setActiveInput(null);
         setIsUserTriggeredLoading(false);
@@ -175,8 +186,10 @@ export function Converter() {
 
   const handleWbtcChange = (value: string) => {
     if (value === '' || decimalRegex.test(value)) {
-      setWbtcAmount(value);
-      if (value === '') {
+      // Truncate to 8 decimals for wBTC
+      const truncated = truncateDecimals(value, 8);
+      setWbtcAmount(truncated);
+      if (truncated === '') {
         setUsdAmount('');
         setActiveInput(null);
         setIsUserTriggeredLoading(false);
