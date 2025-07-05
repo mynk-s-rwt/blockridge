@@ -3,6 +3,7 @@ import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { useAccount } from 'wagmi';
+import { TOKENS } from '@/lib/config';
 
 export function Converter() {
   const { isConnected } = useAccount();
@@ -39,26 +40,43 @@ export function Converter() {
           <label className="block text-sm font-medium text-card-content-secondary mb-2">
             USD Amount
           </label>
-          <Input
-            type="number"
-            placeholder="Enter USD amount"
-            value={usdAmount}
-            onChange={(e) => handleUsdChange(e.target.value)}
-            className="bg-input-bg text-input-text border-input-border rounded-input placeholder-input-placeholder focus:border-input-focus-border focus:shadow-input-focus-shadow"
-          />
+          <div className="relative flex items-center">
+            <Input
+              type="text"
+              inputMode="decimal"
+              pattern="^[0-9]*[.,]?[0-9]*$"
+              placeholder="Enter USD amount"
+              value={usdAmount}
+              onChange={(e) => handleUsdChange(e.target.value)}
+              className="bg-input-bg text-input-text border-input-border rounded-input placeholder-input-placeholder focus:border-input-focus-border focus:shadow-input-focus-shadow pr-12"
+            />
+            <img
+              src={TOKENS.USDC.logoURI}
+              className="absolute right-3 w-7 h-7"
+            />
+          </div>
         </div>
 
         <div>
           <label className="block text-sm font-medium text-card-content-secondary mb-2">
             wBTC Amount
           </label>
-          <Input
-            type="number"
-            placeholder="Enter wBTC amount"
-            value={wbtcAmount}
-            onChange={(e) => handleWbtcChange(e.target.value)}
-            className="bg-input-bg text-input-text border-input-border rounded-input placeholder-input-placeholder focus:border-input-focus-border focus:shadow-input-focus-shadow"
-          />
+          <div className="relative flex items-center">
+            <Input
+              type="text"
+              inputMode="decimal"
+              pattern="^[0-9]*[.,]?[0-9]*$"
+              placeholder="Enter wBTC amount"
+              value={wbtcAmount}
+              onChange={(e) => handleWbtcChange(e.target.value)}
+              className="bg-input-bg text-input-text border-input-border rounded-input placeholder-input-placeholder focus:border-input-focus-border focus:shadow-input-focus-shadow pr-12"
+            />
+            <img
+              src={TOKENS.BTC.logoURI}
+              alt="wBTC"
+              className="absolute right-3 w-7 h-7"
+            />
+          </div>
         </div>
 
         <Button
