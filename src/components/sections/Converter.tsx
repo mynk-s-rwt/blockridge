@@ -207,7 +207,7 @@ export function Converter() {
   };
 
   return (
-    <Card className="w-full max-w-md mx-auto p-6 bg-card-bg border border-card-border shadow-card rounded-lg">
+    <Card className="w-full max-w-md mx-auto p-4 sm:p-6 bg-card-bg border border-card-border shadow-card rounded-lg">
       <div className="space-y-6">
         {/* Top Field (dynamic) */}
         <div>
