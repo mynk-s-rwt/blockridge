@@ -66,30 +66,36 @@ export function Converter() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isLoading, error, usdPrice, debouncedUsdAmount, debouncedWbtcAmount]);
 
+  const decimalRegex = /^\d*(\.\d*)?$/;
+
   const handleUsdChange = (value: string) => {
-    setUsdAmount(value);
-    if (value === '') {
-      setWbtcAmount('');
-      setActiveInput(null);
-      setIsUserTriggeredLoading(false);
-      return;
+    if (value === '' || decimalRegex.test(value)) {
+      setUsdAmount(value);
+      if (value === '') {
+        setWbtcAmount('');
+        setActiveInput(null);
+        setIsUserTriggeredLoading(false);
+        return;
+      }
+      setActiveInput('usd');
+      setWbtcAmount(''); // Clear output while loading
+      setIsUserTriggeredLoading(true);
     }
-    setActiveInput('usd');
-    setWbtcAmount(''); // Clear output while loading
-    setIsUserTriggeredLoading(true);
   };
 
   const handleWbtcChange = (value: string) => {
-    setWbtcAmount(value);
-    if (value === '') {
-      setUsdAmount('');
-      setActiveInput(null);
-      setIsUserTriggeredLoading(false);
-      return;
+    if (value === '' || decimalRegex.test(value)) {
+      setWbtcAmount(value);
+      if (value === '') {
+        setUsdAmount('');
+        setActiveInput(null);
+        setIsUserTriggeredLoading(false);
+        return;
+      }
+      setActiveInput('wbtc');
+      setUsdAmount(''); // Clear output while loading
+      setIsUserTriggeredLoading(true);
     }
-    setActiveInput('wbtc');
-    setUsdAmount(''); // Clear output while loading
-    setIsUserTriggeredLoading(true);
   };
 
   return (
@@ -113,11 +119,6 @@ export function Converter() {
               />
             ) : (
               <InputSkeleton />
-            )}
-            {isLoading && (
-              <span className="absolute right-10 flex items-center justify-center">
-                <span className="animate-spin h-5 w-5 border-2 border-t-transparent border-white rounded-full"></span>
-              </span>
             )}
             <img
               src={TOKENS.USDC.logoURI}
@@ -144,11 +145,6 @@ export function Converter() {
               />
             ) : (
               <InputSkeleton />
-            )}
-            {isLoading && (
-              <span className="absolute right-10 flex items-center justify-center">
-                <span className="animate-spin h-5 w-5 border-2 border-t-transparent border-white rounded-full"></span>
-              </span>
             )}
             <img
               src={TOKENS.BTC.logoURI}
