@@ -152,7 +152,7 @@ export function Converter() {
             )}
             <img
               src={TOKENS.USDC.logoURI}
-              className="absolute right-3 w-7 h-7"
+              className="absolute right-2 w-5.5 h-5.5"
             />
           </div>
         </div>
@@ -178,7 +178,7 @@ export function Converter() {
             )}
             <img
               src={TOKENS.BTC.logoURI}
-              className="absolute right-3 w-7 h-7"
+              className="absolute right-2 w-5.5 h-5.5"
             />
           </div>
         </div>
