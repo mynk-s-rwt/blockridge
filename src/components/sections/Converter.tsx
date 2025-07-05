@@ -9,12 +9,22 @@ import { useDebounce } from '@/lib/hooks/use-debounce';
 
 const FALLBACK_BTC_PRICE = 107500;
 
+function InputSkeleton() {
+  return (
+    <div
+      className="w-full h-11 border border-input-border rounded-[0.75rem] bg-gray-700/60 animate-pulse px-3 flex items-center"
+    >
+      <div className="h-5 w-1/3 bg-gray-600/60 rounded" />
+    </div>
+  );
+}
+
 export function Converter() {
   const { isConnected } = useAccount();
   const [usdAmount, setUsdAmount] = useState<string>('');
   const [wbtcAmount, setWbtcAmount] = useState<string>('');
   const [activeInput, setActiveInput] = useState<'usd' | 'wbtc' | null>(null);
-  const [pendingOutput, setPendingOutput] = useState<string>('');
+  const [isUserTriggeredLoading, setIsUserTriggeredLoading] = useState(false);
   const { usdPrice, isLoading, error, refetch } = usePrice('bitcoin');
 
   const debouncedUsdAmount = useDebounce(usdAmount, 300);
@@ -26,6 +36,7 @@ export function Converter() {
   // Refetch price when debounced input changes
   useEffect(() => {
     if (debouncedUsdAmount || debouncedWbtcAmount) {
+      if (activeInput) setIsUserTriggeredLoading(true);
       refetch();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -49,8 +60,8 @@ export function Converter() {
           setUsdAmount('');
         }
       }
-      setPendingOutput('');
       setActiveInput(null);
+      setIsUserTriggeredLoading(false);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isLoading, error, usdPrice, debouncedUsdAmount, debouncedWbtcAmount]);
@@ -59,14 +70,14 @@ export function Converter() {
     setUsdAmount(value);
     setActiveInput('usd');
     setWbtcAmount(''); // Clear output while loading
-    setPendingOutput('...');
+    setIsUserTriggeredLoading(true);
   };
 
   const handleWbtcChange = (value: string) => {
     setWbtcAmount(value);
     setActiveInput('wbtc');
     setUsdAmount(''); // Clear output while loading
-    setPendingOutput('...');
+    setIsUserTriggeredLoading(true);
   };
 
   return (
@@ -76,17 +87,21 @@ export function Converter() {
           <label className="block text-sm font-medium text-card-content-secondary mb-2">
             USD Amount
           </label>
-          <div className="relative flex items-center">
-            <Input
-              type="text"
-              inputMode="decimal"
-              pattern="^[0-9]*[.,]?[0-9]*$"
-              placeholder="Enter USD amount"
-              value={activeInput === 'wbtc' && isLoading ? pendingOutput : usdAmount}
-              onChange={(e) => handleUsdChange(e.target.value)}
-              className="bg-input-bg text-input-text border-input-border rounded-input placeholder-input-placeholder focus:border-input-focus-border focus:shadow-input-focus-shadow pr-12"
-              disabled={isLoading || !!error}
-            />
+          <div className="relative flex items-center min-h-[48px]">
+            {activeInput === 'usd' || !isUserTriggeredLoading ? (
+              <Input
+                type="text"
+                inputMode="decimal"
+                pattern="^[0-9]*[.,]?[0-9]*$"
+                placeholder="Enter USD amount"
+                value={usdAmount}
+                onChange={(e) => handleUsdChange(e.target.value)}
+                className="bg-input-bg text-input-text border-input-border rounded-input placeholder-input-placeholder focus:border-input-focus-border focus:shadow-input-focus-shadow pr-12"
+                disabled={isLoading || !!error}
+              />
+            ) : (
+              <InputSkeleton />
+            )}
             {isLoading && (
               <span className="absolute right-10 flex items-center justify-center">
                 <span className="animate-spin h-5 w-5 border-2 border-t-transparent border-white rounded-full"></span>
@@ -103,17 +118,21 @@ export function Converter() {
           <label className="block text-sm font-medium text-card-content-secondary mb-2">
             wBTC Amount
           </label>
-          <div className="relative flex items-center">
-            <Input
-              type="text"
-              inputMode="decimal"
-              pattern="^[0-9]*[.,]?[0-9]*$"
-              placeholder="Enter wBTC amount"
-              value={activeInput === 'usd' && isLoading ? pendingOutput : wbtcAmount}
-              onChange={(e) => handleWbtcChange(e.target.value)}
-              className="bg-input-bg text-input-text border-input-border rounded-input placeholder-input-placeholder focus:border-input-focus-border focus:shadow-input-focus-shadow pr-12"
-              disabled={isLoading || !!error}
-            />
+          <div className="relative flex items-center min-h-[48px]">
+            {activeInput === 'wbtc' || !isUserTriggeredLoading ? (
+              <Input
+                type="text"
+                inputMode="decimal"
+                pattern="^[0-9]*[.,]?[0-9]*$"
+                placeholder="Enter wBTC amount"
+                value={wbtcAmount}
+                onChange={(e) => handleWbtcChange(e.target.value)}
+                className="bg-input-bg text-input-text border-input-border rounded-input placeholder-input-placeholder focus:border-input-focus-border focus:shadow-input-focus-shadow pr-12"
+                disabled={isLoading || !!error}
+              />
+            ) : (
+              <InputSkeleton />
+            )}
             {isLoading && (
               <span className="absolute right-10 flex items-center justify-center">
                 <span className="animate-spin h-5 w-5 border-2 border-t-transparent border-white rounded-full"></span>
