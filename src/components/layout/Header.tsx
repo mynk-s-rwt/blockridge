@@ -24,7 +24,7 @@ export function Header() {
         <h1 className="text-lg sm:text-xl font-semibold text-text-primary">wBTC</h1>
       </div>
       {/* Desktop: show network pill and wallet button inline */}
-      <div className="hidden sm:flex flex-row items-center gap-6">
+      <div className="hidden sm:flex flex-row items-center gap-6 ml-auto">
         <div className={`flex items-center h-9 sm:h-10 px-3 sm:px-4 rounded-full text-xs sm:text-sm font-semibold bg-card-bg border border-card-border select-none pointer-events-none gap-2 min-w-[100px] sm:min-w-[120px] justify-center sm:mr-4`}>
           <span className={`inline-block w-2 h-2 rounded-full ${isEthereum ? 'bg-green-500' : 'bg-gray-400'}`}></span>
           <span>Ethereum</span>
@@ -42,13 +42,14 @@ export function Header() {
       <div className="flex sm:hidden items-center">
         <Dialog open={sidebarOpen} onOpenChange={setSidebarOpen}>
           <DialogTrigger asChild>
-            <button aria-label="Open wallet sidebar" className="p-2 rounded-full hover:bg-card-bg focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <button aria-label="Open wallet sidebar" className="p-2 rounded-full hover:bg-card-bg focus:outline-none focus:ring-2 focus:ring-blue-500 sm:hidden">
               <Wallet2 className="w-6 h-6 text-text-primary" />
             </button>
           </DialogTrigger>
           <DialogContent showCloseButton={true} sidebar={true} className="fixed right-0 top-0 h-full w-64 max-w-[80vw] rounded-none border-0 p-0 bg-card-bg flex flex-col z-50 shadow-2xl">
             <div className="flex flex-col gap-6 p-6 h-full justify-between">
               <div className="flex flex-col gap-4 mt-4">
+                {/* Mobile pill: network + wallet button horizontally */}
                 <div className="flex flex-row items-center gap-2 bg-background border border-card-border rounded-full px-3 py-2 w-full justify-center">
                   <div className={`flex items-center h-9 rounded-full text-xs font-semibold select-none pointer-events-none gap-2 min-w-[100px] justify-center`}>
                     <span className={`inline-block w-2 h-2 rounded-full ${isEthereum ? 'bg-green-500' : 'bg-gray-400'}`}></span>
