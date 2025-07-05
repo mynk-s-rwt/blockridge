@@ -50,7 +50,7 @@ export function Header() {
             <div className="flex flex-col gap-6 p-6 h-full justify-between">
               <div className="flex flex-col gap-4 mt-4">
                 {/* Mobile pill: network + wallet button horizontally */}
-                <div className="flex flex-row items-center gap-2 bg-background border border-card-border rounded-full px-3 py-2 w-full justify-center">
+                <div className="flex flex-col items-center gap-4 bg-background border border-card-border rounded-lg p-3 w-full">
                   <div className={`flex items-center h-9 rounded-full text-xs font-semibold select-none pointer-events-none gap-2 min-w-[100px] justify-center`}>
                     <span className={`inline-block w-2 h-2 rounded-full ${isEthereum ? 'bg-green-500' : 'bg-gray-400'}`}></span>
                     <span>Ethereum</span>
